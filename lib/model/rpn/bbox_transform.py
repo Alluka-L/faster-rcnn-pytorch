@@ -67,5 +67,30 @@ def bbox_transform_batch(ex_rois, gt_rois):
     return targets
 
 
-def bbox_transform_(bbox, deltas, batch_size):
-    pass
+def bbox_transform_(bboxes, deltas, batch_size):
+    widths = bboxes[:, :, 2] - bboxes[:, :, 0] + 1.0
+    heights = bboxes[:, :, 3] - bboxes[:, :, 1] + 1.0
+    ctr_x = bboxes[:, :, 0] + 0.5 * widths
+    ctr_y = bboxes[:, :, 1] + 0.5 * heights
+
+    dx = deltas[:, :, 0::4]
+    dy = deltas[:, :, 1::4]
+    dw = deltas[:, :, 2::4]
+    dh = deltas[:, :, 3::4]
+
+    pred_ctr_x = dx * widths.unsqueeze(2) + ctr_x.unsqueeze(2)
+    pred_ctr_y = dy * heights.unsqueeze(2) + ctr_y.unsqueeze(2)
+    pred_w = torch.exp(dw) * widths.unsqueeze(2)
+    pred_h = torch.exp(dh) * heights.unsqueeze(2)
+
+    pred_boxes = deltas.clone()
+    # x1
+    pred_boxes[:, :, 0::4] = pred_ctr_x - 0.5 * pred_w
+    # y1
+    pred_boxes[:, :, 1::4] = pred_ctr_y - 0.5 * pred_h
+    # x2
+    pred_boxes[:, :, 2::4] = pred_ctr_x + 0.5 * pred_w
+    # y2
+    pred_boxes[:, :, 3::4] = pred_ctr_y + 0.5 * pred_h
+
+    return pred_boxes
