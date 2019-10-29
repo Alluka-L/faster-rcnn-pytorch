@@ -94,3 +94,22 @@ def bbox_transform_(bboxes, deltas, batch_size):
     pred_boxes[:, :, 3::4] = pred_ctr_y + 0.5 * pred_h
 
     return pred_boxes
+
+
+def clip_bboxes_batch(boxes, im_shape, batch_size):
+    """
+    Clip boxes to image boundaries.
+    """
+    num_rois = boxes.size(1)
+
+    boxes[boxes < 0] = 0
+    # max
+    batch_x = im_shape[:, 1] - 1
+    batch_y = im_shape[:, 0] - 1
+
+    boxes[:, :, 0][boxes[:, :, 0] > batch_x] = batch_x
+    boxes[:, :, 1][boxes[:, :, 1] > batch_y] = batch_y
+    boxes[:, :, 2][boxes[:, :, 2] > batch_x] = batch_x
+    boxes[:, :, 3][boxes[:, :, 3] > batch_y] = batch_y
+
+    return boxes
