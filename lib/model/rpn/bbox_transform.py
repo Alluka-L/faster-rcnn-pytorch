@@ -106,10 +106,23 @@ def clip_bboxes_batch(boxes, im_shape, batch_size):
     # max
     batch_x = im_shape[:, 1] - 1
     batch_y = im_shape[:, 0] - 1
+    # batch_x = (im_shape[:,0]-1).view(batch_size, 1).expand(batch_size, num_rois)
+    # batch_y = (im_shape[:,1]-1).view(batch_size, 1).expand(batch_size, num_rois)
 
     boxes[:, :, 0][boxes[:, :, 0] > batch_x] = batch_x
     boxes[:, :, 1][boxes[:, :, 1] > batch_y] = batch_y
     boxes[:, :, 2][boxes[:, :, 2] > batch_x] = batch_x
     boxes[:, :, 3][boxes[:, :, 3] > batch_y] = batch_y
+
+    return boxes
+
+
+def clip_boxes(boxes, im_shape, batch_size):
+
+    for i in range(batch_size):
+        boxes[i, :, 0::4].clamp_(0, im_shape[i, 1] - 1)
+        boxes[i, :, 1::4].clamp_(0, im_shape[i, 0] - 1)
+        boxes[i, :, 2::4].clamp_(0, im_shape[i, 1] - 1)
+        boxes[i, :, 3::4].clamp_(0, im_shape[i, 0] - 1)
 
     return boxes
