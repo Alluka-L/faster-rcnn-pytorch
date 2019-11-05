@@ -7,7 +7,7 @@ import yaml
 from .generate_anchors import generate_anchors
 from .bbox_transform import bbox_transform_inv, clip_boxes, clip_bboxes_batch
 import pdb
-# TODO: from model.utils.config import cfg
+from lib.model.utils.config import cfg
 # TODO: from model.nms.nms_wrapper import nms
 
 DEBUG = False
@@ -38,7 +38,19 @@ class _ProposaLayer(nn.Module):
         apply NMS with threshold 0.7 to remaining proposals.
         Take after_nms_topN proposals after NMS
         Return the top proposals (-> RoIs top, scores top)
-
-        The first set of _num_anchors channels are bg probs.
-        The second set are the fg probs
         """
+
+        # The first set of _num_anchors channels are bg probs.
+        # The second set are the fg probs
+        # TODO: What is input?
+        scores = input[0][:, self._num_anchors:, :, :]
+        bbox_deltas = input[1]
+        im_info = input[2]
+        cfg_key = input[3]
+
+        pre_nms_topN = cfg[cfg_key].RPN_PRE_NMS_TOP_N
+        post_nms_topN = cfg[cfg_key].RPN_POST_NMS_TOP_N
+        nms_thresh = cfg[cfg_key].RPN_NMS_THRESH
+        min_size = cfg[cfg_key].RPN_MIN_SIZE
+
+        batch_size = bbox_deltas.size(0)
