@@ -54,3 +54,4 @@ class _ProposaLayer(nn.Module):
         min_size = cfg[cfg_key].RPN_MIN_SIZE
 
         batch_size = bbox_deltas.size(0)
+        pass
